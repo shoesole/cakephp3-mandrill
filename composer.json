@@ -1,11 +1,15 @@
 {
-    "name": "lennaert/cakephp3-mandrill",
-    "description": "Mandrill Email Transport for CakePHP 3",
+    "name": "shoesole/cakephp4-mandrill",
+    "description": "Mandrill Email Transport for CakePHP 4",
     "type": "cakephp-plugin",
     "keywords": ["cakephp", "mandrill"],
     "license": "MIT",
     "homepage": "https://github.com/Lennaert/cakephp3-mandrill",
     "authors": [
+        {
+            "name": "Jeff Shoemaker",
+            "homepage": "http://shoe-sole.com/"
+        },
         {
             "name": "Lennaert van Dijke",
             "homepage": "http://lennaert.nu/"
@@ -17,7 +21,7 @@
     },
     "require": {
         "php": ">=5.4.16",
-        "cakephp/cakephp": "3 - 4"
+        "cakephp/cakephp": ">=3"
     },
     "autoload": {
         "psr-4": {
