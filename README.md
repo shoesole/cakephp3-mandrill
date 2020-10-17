@@ -1,6 +1,8 @@
 # CakePHP 4 Mandrill plugin
 
-This is a Mandrill Email Transport plugin for CakePHP 4. To use, you'll need to have an active Mandrill account, set up with the email address you'll be sending from, and an API `key`.
+This is a Mandrill / MailChimp Transactional Email Transport plugin for CakePHP 4. To use, you'll need to have an active MailChimp account with Transactional Email support, set up with the email address you'll be sending from, and an API `key`.
+
+This plugin is based on the CakePHP 3 Mandrill Plugin By Lennaert van Dijke: https://github.com/Lennaert/cakephp3-mandrill
 
 To install this plugin, you're best off using composer. Add:
 

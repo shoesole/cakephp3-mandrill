@@ -4,7 +4,7 @@
     "type": "cakephp-plugin",
     "keywords": ["cakephp", "mandrill"],
     "license": "MIT",
-    "homepage": "https://github.com/Lennaert/cakephp3-mandrill",
+    "homepage": "https://github.com/shoesole/cakephp4-mandrill",
     "authors": [
         {
             "name": "Jeff Shoemaker",
@@ -16,11 +16,11 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/Lennaert/cakephp3-mandrill/issues",
-        "source": "https://github.com/Lennaert/cakephp3-mandrill"
+        "issues": "https://github.com/shoesole/cakephp4-mandrill/issues",
+        "source": "https://github.com/shoesole/cakephp4-mandrill"
     },
     "require": {
-        "php": ">=5.4.16",
+        "php": ">=7.0",
         "cakephp/cakephp": ">=3"
     },
     "autoload": {
