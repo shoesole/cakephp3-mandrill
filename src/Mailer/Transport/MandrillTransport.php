@@ -9,10 +9,11 @@
  * @link          http://lennaert.nu
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace MandrillEmail\Network\Email;
+namespace MandrillEmail\Mailer\Transport;
 
 use Cake\Core\Configure;
 use Cake\Mailer\Email;
+use Cake\Mailer\Mailer;
 use Cake\Network\Exception\SocketException;
 use Cake\Http\Client;
 use Cake\Utility\Hash;
@@ -65,35 +66,35 @@ class MandrillTransport extends AbstractTransport
     /**
      * Send mail using Mandrill (by MailChimp)
      *
-     * @param \Cake\Network\Email\Email $email Cake Email
+     * @param Cake\Mailer\Message $message Cake Message
      * @return array
      */
-    public function send(Email $email)
+    public function send(\Cake\Mailer\Message $message): array
     {
         $this->transportConfig = Hash::merge($this->transportConfig, $this->_config);
 
         // Initiate a new Mandrill Message parameter array
-        $message = [
-            'html'                      => $email->message(Email::MESSAGE_HTML),
-            'text'                      => $email->message(Email::MESSAGE_TEXT),
-            'subject'                   => $this->_decode($email->getSubject()), // Decode because Mandrill is encoding
-            'from_email'                => key($email->getFrom()), // Make sure the domain is registered and verified within Mandrill
-            'from_name'                 => current($email->getFrom()),
+        $sendMessage = [
+            'html'                      => $message->getBodyHtml(),
+            'text'                      => $message->getBodyText(),
+            'subject'                   => $this->_decode($message->getSubject()), // Decode because Mandrill is encoding
+            'from_email'                => key($message->getFrom()), // Make sure the domain is registered and verified within Mandrill
+            'from_name'                 => current($message->getFrom()),
             'to'                        => [ ],
-            'headers'                   => ['Reply-To' => is_null(key($email->getReplyTo()))?key($email->getFrom()):key($email->getReplyTo())],
+            'headers'                   => ['Reply-To' => is_null(key($message->getReplyTo()))?key($message->getFrom()):key($message->getReplyTo())],
             'recipient_metadata'        => [ ],
             'attachments'               => [ ],
             'images'                    => [ ]
         ];
 
         // Merge Mandrill Parameters
-        $message = array_merge($message, Hash::merge($this->defaultParameters, $email->getProfile()['Mandrill']));
+        $sendMessage = array_merge($sendMessage, $this->defaultParameters);
 
         // Add receipients
         foreach (['to', 'cc', 'bcc'] as $type) {
             $method = "get{$type}";
-            foreach ($email->{$method}() as $mail => $name) {
-                $message['to'][] = [
+            foreach ($message->{$method}() as $mail => $name) {
+                $sendMessage['to'][] = [
                     'email' => $mail,
                     'name'  => $name,
                     'type'  => $type
@@ -101,10 +102,10 @@ class MandrillTransport extends AbstractTransport
             }
         }
         if ($this->getConfig('Mandrill.preserve_recipients')) {
-            $message['preserve_recipients'] = true;
+            $sendMessage['preserve_recipients'] = true;
         }
         // Attachments
-        $message = $this->_attachments($email, $message);
+        $sendMessage = $this->_attachments($message, $sendMessage);
 
         // Create a new scoped Http Client
         $this->http = new Client([
@@ -117,22 +118,22 @@ class MandrillTransport extends AbstractTransport
 
         // Sending as a template? Then in case we find mail content, we add this as a 'template_content'.
         // In you Mandrill template, use <div mc:edit="content"></div> to get the contents of your email
-        if (!is_null($message['template_name']) && $message['html']) {
-            if (!isset($message['template_content']) || !is_array($message['template_content'])) {
-                $message['template_content'] = [ ];
+        if (!is_null($sendMessage['template_name']) && $sendMessage['html']) {
+            if (!isset($sendMessage['template_content']) || !is_array($sendMessage['template_content'])) {
+                $sendMessage['template_content'] = [ ];
             }
 
-            $message['template_content'][] = [
+            $sendMessage['template_content'][] = [
                 'name'    => 'content',
-                'content' => $message['html']
+                'content' => $sendMessage['html']
             ];
         }
 
         // Are we sending a template?
-        if (!is_null($message['template_name']) && !empty($message['template_content'])) {
-            return $this->_sendTemplate($message, $this->transportConfig['async'], $this->transportConfig['ip_pool'], $message['send_at']);
+        if (!is_null($sendMessage['template_name']) && !empty($sendMessage['template_content'])) {
+            return $this->_sendTemplate($sendMessage, $this->transportConfig['async'], $this->transportConfig['ip_pool'], $sendMessage['send_at']);
         } else {
-            return $this->_send($message, $this->transportConfig['async'], $this->transportConfig['ip_pool'], $message['send_at']);
+            return $this->_send($sendMessage, $this->transportConfig['async'], $this->transportConfig['ip_pool'], $sendMessage['send_at']);
         }
     }
 
@@ -230,7 +231,7 @@ class MandrillTransport extends AbstractTransport
      * @param type $message
      * @return array Message
      */
-    protected function _attachments(Email $email, $message = [])
+    protected function _attachments(\Cake\Mailer\Message $email, $message = [])
     {
         foreach ($email->getAttachments() as $filename => $attach) {
             $content = base64_encode(file_get_contents($attach['file']));
